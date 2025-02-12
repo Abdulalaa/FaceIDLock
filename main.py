@@ -10,7 +10,15 @@ Authors:
 - Josh M.
 - Bryan R.
 
+Modules:
+- authorized_faces.json - List of authurized faces in kew-value pairs
+- config.py - Configuration variables and settings
+- face_recognition.py - Face recognition and verification
+- serial_comm.py - Serial communication with the Arduino
+- requirements.txt - List of dependencies
+
 ---------------------------------------------                                                
 Secure Facial Recognition Access Control System
 ---------------------------------------------
 """
+
