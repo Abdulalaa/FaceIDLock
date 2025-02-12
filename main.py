@@ -14,16 +14,32 @@ Modules:
 - main.py - Main module for running the face recognition system, handles flow of execution
 - authorized_faces.json - List of authurized faces in kew-value pairs
 - config.py - Configuration variables and settings
-- face_recognition.py - Face recognition and verification
+- faceID.py - Face recognition and verification
 - serial_comm.py - Serial communication with the Arduino
 - requirements.txt - List of dependencies
+- sys.log - Log file for security auditing, system diagnostics/monitoring, troubleshooting/debugging/exceptions, system status
 
 ---------------------------------------------                                                
 Secure Facial Recognition Access Control System
 ---------------------------------------------
 """
-# Import modules for camera vision, time, and logging
-import cv2
-import time
-import logging
-import psutil
+# Import necessary main flow modules
+import cv2 # For camera vision
+import time # For timing operations
+import logging # For logging messages
+import psutil # For system monitoring
+
+# Import configurations
+from config import *
+
+# Configure logging for security auditing, system diagnostics/monitoring, troubleshooting/debugging/exceptions, system status
+# Will send logs to sys.log file
+logging.basicConfig(
+    filename="sys.log",
+    encoding="utf-8",
+    filemode="a",
+    format="{asctime} - {levelname} - {message}",
+    style="{",
+    datefmt="%Y-%m-%d %H:%M",
+)
+
