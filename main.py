@@ -11,6 +11,7 @@ Authors:
 - Bryan R.
 
 Modules:
+- main.py - Main module for running the face recognition system, handles flow of execution
 - authorized_faces.json - List of authurized faces in kew-value pairs
 - config.py - Configuration variables and settings
 - face_recognition.py - Face recognition and verification
@@ -21,4 +22,6 @@ Modules:
 Secure Facial Recognition Access Control System
 ---------------------------------------------
 """
+
+import cv2
 
