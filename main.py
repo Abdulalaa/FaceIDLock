@@ -22,6 +22,9 @@ Modules:
 Secure Facial Recognition Access Control System
 ---------------------------------------------
 """
-
+# Import modules for camera vision, time, and logging
 import cv2
+import time
+import logging
+
 
