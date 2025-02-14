@@ -50,44 +50,67 @@ logging.basicConfig(
 # Initialize logging
 logger = logging.getLogger(__name__)
 
+# Variables: camera (Picamera2), face_detector (CascadeClassifier), face_found (list of faces in frame)
 
-# Begin execution of the program
-# Note: Picamera2 is focused on starting the camera and configuration, CV2 is focused on image processing
-def main():
-    while True: # OUTER LOOP: Hardware Initialization
+
+# 1. Function to initialize the camera hardware and configurations
+def initialize_camera():
+    try:
+        logger.info("Initializing camera hardware and configurations...")
+        camera = Picamera2() # Initialize the camera hardware, resource allocation, and drivers through Picamera2
+        camera.configure(camera_config) # Configure the camera specs (camera_config is defined in config.py)
+        camera.start() # Start the camera
+        time.sleep(2) # Allow camera to warm up
+        logger.info("Camera initialized successfully")
+        return camera
+    except Exception as e:
+        logger.error(f"Error initializing camera: {e}")
+        logger.info("Attempting to restart camera initialization...")
+        # Stop and clean up camera resources if they exist
         try:
-            # 1. Initialize the camera
-            logger.info("Initializing camera...")
-            camera = Picamera2() # Initialize the camera hardware, resource allocation, and drivers (Picamera2 for camera hardware and configuration)
-            camera.configure(camera_config) # Configure the camera (camera_config is defined in config.py)
-            camera.start() # Start the camera
-            time.sleep(2) # Allow camera to warm up
-            logger.info("Camera initialized successfully")
+            camera.stop()
+            camera.close()
+        except:
+            pass  # Camera may not have been initialized, do nothing
+        return None # Return None if camera initialization fails
 
-            # 2. Initialize the cascade classifier
-            logger.info("Initializing cascade classifier...")
-            face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml") # cv2 + cascade classifier file path
-            logger.info("Cascade classifier initialized successfully")
+# 2. Function to initialize the face detector (cascade classifier)
+def initialize_face_detector():
+    try:
+        logger.info("Initializing face detector...")
+        face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml") # cv2 + cascade classifier file path
+        logger.info("Cascade classifier initialized successfully")
+        return face_detector   
+    except Exception as e:
+        logger.error(f"Error initializing cascade classifier: {e}")
+        logger.info("Attempting to restart cascade classifier initialization...")
+        return None # Return None if cascade classifier initialization fails
 
-            # 3. Begin recording/capturing frames
-            logger.info("Beginning frame capture...")
-
-            while True: # INNER LOOP: Frame Capture/Face Detection
-                faces = []
-                # 4. Begin checking for facial recognition in frames using Cascade Classifier (CV2 for image processing)
-                # Cascade Classifier prioritizes speed for finding faces in frames, faceID will use face_recognition to verify faces
-                logger.info("Checking for faces in frames...")
-                while (len(faces) != 1): # Ensure only one face is in frame for safety, ensuring no forced entry
-                    frame = camera.capture_array() # Capture a frame from the camera
-                    faces = face_detector.detectMultiScale(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), cascade_classifier_config) # Detect faces in the frame
-                    logger.info(f"Face detected in frame")
-
-                logger.info("Beginning facial verification...")
+# 3. Function to initialize the facial search model
+# Begin face detection loop
+def detect_faces(camera, face_detector):
+    while True:
+        try:
+            logger.info("Face detection is up and running...")
+            face_found = []
+            while (len(face_found) != 1): # Ensure only one face is in frame for safety, ensuring no forced entry
+                frame = camera.capture_array() # Capture a frame from the camera
+                face_found = face_detector.detectMultiScale(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), cascade_classifier_config) # Detect faces in the frame
             
-                # 5. Begin facial verification
+            logger.info("Face detected, beginning facial verification...") # Break in face count logic when face is detected
+            
+            # Return the frame and face location for facial verification
+            face_verified = faceID(frame, face_found[0])  # Inputs: face frame and facial coordinates relative to frame to faceID module
+            
 
         except Exception as e:
-            logger.error(f"Error initializing camera: {e}")
-            logger.info("Attempting to restart...")
-            time.sleep(2)  # Wait before retrying
-            continue
+            logger.error(f"Error detecting faces: {e}")
+            logger.info("Attempting to restart face detection...")
+            return None # Return None if face detection fails
+
+    
+        # 5. Begin facial verification
+        # Logic for facial verification will go here
+
+        # 6. If verification is successful, send signal to Arduino to unlock door
+        # Logic for sending signal to Arduino will go here

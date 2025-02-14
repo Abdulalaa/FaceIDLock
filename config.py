@@ -33,4 +33,5 @@ cascade_classifier_config = {
     "maxSize": (300,300)
 }
 
-
+# Max Failure Count
+MAX_FAILURES = 3
