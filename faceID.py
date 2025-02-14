@@ -1,4 +1,5 @@
 import logging
+import cv2
 import face_recognition
 import random
 import json
