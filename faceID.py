@@ -1,8 +1,8 @@
+import logging
 import face_recognition
-import cv2
+import random
 import json
 import numpy as np
-import datetime
 
 # Load face encodings from JSON file
 with open("authorized_faces.json", "r") as json_file:
