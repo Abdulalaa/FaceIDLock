@@ -2,6 +2,8 @@ import logging
 import cv2
 import face_recognition
 import random
+import json
+import numpy as np
 
 # Initialize logging
 logger = logging.getLogger(__name__)
