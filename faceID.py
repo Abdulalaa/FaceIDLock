@@ -1,6 +1,11 @@
+import logging
 import cv2
 import face_recognition
 import random
+
+# Initialize logging
+logger = logging.getLogger(__name__)
+
 
 video_capture = cv2.VideoCapture(0)
 print("Press 'q' to quit.")

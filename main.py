@@ -25,6 +25,7 @@ Secure Facial Recognition Access Control System
 """
 # Import necessary main flow modules
 import cv2 # For camera vision
+from picamera2 import Picamera2 # For connection to Pi camera module, needs testing in Pi OS
 import time # For timing operations
 import logging # For logging messages
 import psutil # For system monitoring
@@ -36,11 +37,15 @@ from config import *
 # Configure logging for security auditing, system diagnostics/monitoring, troubleshooting/debugging/exceptions, system status
 # Will send logs to sys.log file
 logging.basicConfig(
-    filename="sys.log",
+    filename="sys.log", 
     encoding="utf-8",
     filemode="a",
     format="{asctime} - {levelname} - {message}",
     style="{",
     datefmt="%Y-%m-%d %H:%M",
+    level=logging.DEBUG # Capture all levels
 )
+
+# Initialize logging
+logger = logging.getLogger(__name__)
 

@@ -1,3 +1,4 @@
+'''
 # Loggging test code
 
 import logging 
@@ -6,7 +7,9 @@ import logging
 # Use the style parameter to specify the format of the log message
 logging.basicConfig(level=logging.DEBUG, format="{levelname}:{name}:{message}", style="{")
 
-'''
+# Initialize logging
+logger = logging.getLogger(__name__)
+
 Logging levels
 logging.warning("This is a warning")
 
