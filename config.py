@@ -34,4 +34,4 @@ cascade_classifier_config = {
 }
 
 # Max Failure Count
-MAX_FAILURES = 3
+MAX_ATTEMPTS = 3

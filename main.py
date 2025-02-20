@@ -29,9 +29,11 @@ from picamera2 import Picamera2 # For connection to Pi camera module, needs test
 import time # For timing operations
 import logging # For logging messages
 import psutil # For system monitoring
-import numpy as np # For cv2 encoding processes
+import numpy as np # For dealing with numpy arrays
 
 # Import configurations
+from faceID import 
+from serial_comm import
 from config import *
 # Other imports from other files will go here!!!!!
 
@@ -83,7 +85,7 @@ def initialize_face_detector():
         return face_detector   
     except Exception as e:
         logger.error(f"Error initializing cascade classifier: {e}")
-        logger.info("Attempting to restart cascade classifier initialization...")
+        logger.info("Attempting to restart face detector initialization...")
         return None # Return None if cascade classifier initialization fails
 
 # 3. Function to initialize the facial search model
@@ -114,3 +116,43 @@ def detect_faces(camera, face_detector):
 
         # 6. If verification is successful, send signal to Arduino to unlock door
         # Logic for sending signal to Arduino will go here
+
+def main():
+    # Initialize camera, 3 attempts maximum
+    initialization_attempts = 0
+    while initialization_attempts < MAX_ATTEMPTS:
+        camera = initialize_camera()
+        # Break if camera is initialized successfully
+        if camera is not None:
+            break
+        initialization_attempts += 1
+    # If camera is not initialized after 3 attempts, exit program gracefully
+    if camera is None:
+        logger.error("Camera initialization failed after 3 attempts. Exiting program.")
+        return
+    
+    # Initialize face detector, 3 attempts maximum
+    face_detector_attempts = 0
+    while face_detector_attempts < MAX_ATTEMPTS:
+        face_detector = initialize_face_detector()
+        # Break if face detector is initialized successfully
+        if face_detector is not None:
+            break
+        face_detector_attempts += 1
+    # If face detector is not initialized after 3 attempts, exit program gracefully
+    if face_detector is None:
+        logger.error("Face detector initialization failed after 3 attempts. Exiting program.")
+        return
+
+    # Initialize facial search model, 3 attempts maximum
+    facial_search_attempts = 0
+    while facial_search_attempts < MAX_ATTEMPTS:
+        facial_search = detect_faces(camera, face_detector)
+        # Break if facial search model is initialized successfully
+        if facial_search is not None:
+            break
+        facial_search_attempts += 1
+    # If facial search model is not initialized after 3 attempts, exit program gracefully
+    if facial_search is None:
+        logger.error("Facial search model initialization failed after 3 attempts. Exiting program.")
+        return
