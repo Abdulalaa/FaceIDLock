@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 # 1. Function to initialize the camera hardware and configurations
 def initialize_camera():
     try:
-        logger.info("Initializing camera hardware and configurations...")
+        logger.debug("Initializing camera hardware and configurations...")
         camera = Picamera2() # Initialize the camera hardware, resource allocation, and drivers through Picamera2
         camera.configure(camera_config) # Configure the camera specs (camera_config is defined in config.py)
         camera.start() # Start the camera
@@ -66,8 +66,8 @@ def initialize_camera():
         logger.info("Camera initialized successfully")
         return camera
     except Exception as e:
-        logger.error(f"Error initializing camera: {e}")
-        logger.info("Attempting to restart camera initialization...")
+        logger.warning(f"Error initializing camera: {e}")
+        logger.debug("Attempting to restart camera initialization...")
         # Stop and clean up camera resources if they exist
         try:
             camera.stop()
@@ -79,43 +79,43 @@ def initialize_camera():
 # 2. Function to initialize the face detector (cascade classifier)
 def initialize_face_detector():
     try:
-        logger.info("Initializing face detector...")
+        logger.debug("Initializing face detector...")
         face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml") # cv2 + cascade classifier file path
         logger.info("Cascade classifier initialized successfully")
         return face_detector   
     except Exception as e:
-        logger.error(f"Error initializing cascade classifier: {e}")
-        logger.info("Attempting to restart face detector initialization...")
+        logger.warning(f"Error initializing cascade classifier: {e}")
+        logger.debug("Attempting to restart face detector initialization...")
         return None # Return None if cascade classifier initialization fails
 
 # 3. Function to initialize the facial search model
 # Begin face detection loop
-def detect_faces(camera, face_detector):
+def detect_verify_face(camera, face_detector):
     while True:
         try:
-            logger.info("Face detection is up and running...")
-            face_found = []
+            logger.debug("Initializing face detection...")
+            face_found = [] # List of faces in frame
             while (len(face_found) != 1): # Ensure only one face is in frame for safety, ensuring no forced entry
                 frame = camera.capture_array() # Capture a frame from the camera
                 face_found = face_detector.detectMultiScale(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), cascade_classifier_config) # Detect faces in the frame
             
-            logger.info("Face detected, beginning facial verification...") # Break in face count logic when face is detected
-            
-            # Return the frame and face location for facial verification
-            face_verified = faceID(frame, face_found[0])  # Inputs: face frame and facial coordinates relative to frame to faceID module
-            
+            logger.debug("Face detected, beginning facial verification...") # Break in face count logic when face is detected
+
+            if faceID(frame, face_found[0]):
+                logger.info("Face verified, unlocking door...")
+                unlock_door()
+                logger.info("Door unlocked successfully")
+            else:
+                logger.warning("Face not verified, continuing to monitor...")
+                continue
 
         except Exception as e:
-            logger.error(f"Error detecting faces: {e}")
-            logger.info("Attempting to restart face detection...")
+            logger.warning(f"Error analyzing frames: {e}")
+            logger.debug("Attempting to restart face detection...")
             return None # Return None if face detection fails
+        
 
-    
-        # 5. Begin facial verification
-        # Logic for facial verification will go here
 
-        # 6. If verification is successful, send signal to Arduino to unlock door
-        # Logic for sending signal to Arduino will go here
 
 def main():
     # Initialize camera, 3 attempts maximum
@@ -128,7 +128,7 @@ def main():
         initialization_attempts += 1
     # If camera is not initialized after 3 attempts, exit program gracefully
     if camera is None:
-        logger.error("Camera initialization failed after 3 attempts. Exiting program.")
+        logger.critical("Camera initialization failed after 3 attempts. Exiting program.")
         return
     
     # Initialize face detector, 3 attempts maximum
@@ -141,18 +141,18 @@ def main():
         face_detector_attempts += 1
     # If face detector is not initialized after 3 attempts, exit program gracefully
     if face_detector is None:
-        logger.error("Face detector initialization failed after 3 attempts. Exiting program.")
+        logger.critical("Face detector initialization failed after 3 attempts. Exiting program.")
         return
 
     # Initialize facial search model, 3 attempts maximum
     facial_search_attempts = 0
     while facial_search_attempts < MAX_ATTEMPTS:
-        facial_search = detect_faces(camera, face_detector)
+        facial_search = detect_verify_face(camera, face_detector)
         # Break if facial search model is initialized successfully
         if facial_search is not None:
             break
         facial_search_attempts += 1
     # If facial search model is not initialized after 3 attempts, exit program gracefully
     if facial_search is None:
-        logger.error("Facial search model initialization failed after 3 attempts. Exiting program.")
+        logger.critical("Facial search model initialization failed after 3 attempts. Exiting program.")
         return
