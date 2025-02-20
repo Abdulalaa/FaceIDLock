@@ -35,3 +35,6 @@ cascade_classifier_config = {
 
 # Max Failure Count
 MAX_ATTEMPTS = 3
+
+# Door Open Time
+DOOR_OPEN_TIME = 5

@@ -5,6 +5,24 @@ import random
 import json
 import numpy as np
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
 # Load face encodings from JSON file
 with open("authorized_faces.json", "r") as json_file:
     encodings_dict = json.load(json_file)
@@ -78,3 +96,4 @@ while True:
 # Cleanup
 video_capture.release()
 cv2.destroyAllWindows()
+'''
