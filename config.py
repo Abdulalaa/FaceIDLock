@@ -13,7 +13,8 @@ Contains configuration variables and settings used across the application includ
 # Imports
 #------------------------------------------------------------------------------
 import logging
-
+import json
+logger = logging.getLogger(__name__)
 
 #------------------------------------------------------------------------------
 # Camera Config/Specs - (Needs testing and tweaking @Josh M.)

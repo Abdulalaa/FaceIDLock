@@ -26,6 +26,7 @@ import cv2                  # For camera vision
 from picamera2 import Picamera2  # For connection to Pi camera module, needs testing in Pi OS
 import time                 # For timing operations  
 import logging             # For logging messages
+import json                # For loading authorized faces
 
 #------------------------------------------------------------------------------
 # Configuration & Function Imports
@@ -42,13 +43,21 @@ logger.setLevel(logging.DEBUG)
 
 
 #------------------------------------------------------------------------------
-# Global Variables
+# Import JSON file - load and convert to numpy array
 #------------------------------------------------------------------------------
-# camera (Picamera2), face_detector (CascadeClassifier), face_found (list of faces in frame)
+def load_json_file():
+    try:
+        with open("authorized_faces.json", "r") as json_file:
+            encodings_dict = json.load(json_file)
+            return encodings_dict #encodings_dict is a dictionary of face encodings and their corresponding names
+    except OSError:
+        logger.error("Problem loading authorized_faces.json")
+        return False
 
 #------------------------------------------------------------------------------
 # Camera Initialization
-#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------\
+
 def initialize_camera():
     try:
         logger.debug("Initializing camera hardware and configurations...")
@@ -86,9 +95,9 @@ def initialize_face_detector():
 #------------------------------------------------------------------------------
 # Face Detection Loop
 #------------------------------------------------------------------------------
-def detect_face(camera, face_detector):
+def detect_face(camera, face_detector, encodings_dict):
     while True:
-        try:
+        try:            
             logger.debug("Initializing face detection...")
             face_found = []  # List of faces in frame
             while (len(face_found) != 1):  # Ensure only one face is in frame for safety, ensuring no forced entry
@@ -97,23 +106,31 @@ def detect_face(camera, face_detector):
                 time.sleep(0.1)  # Add small delay to prevent CPU overload during continuous frame capture
 
             logger.debug("Face detected, beginning facial verification...")  # Break in face count logic when face is detected
-            if verify_face(frame, face_found[0]):  # Check if the face in the frame is authorized
-                logger.info("Face verified, unlocking door...") 
+            if verify_face(frame, face_found[0], encodings_dict):  # Check if the face in the frame is authorized
+                logger.info("Unlocking door...") 
                 unlock_door()  # If the face is authorized, unlock the door
                 logger.info("Door unlocked successfully")
             else:
-                logger.warning("Face not verified, continuing to monitor...")
-                continue  # If the face is not authorized, continue to monitor
+                logger.warning("Unauthorized face detected, continuing to monitor...")
+                # Continue monitoring
 
         except Exception as e:
             logger.warning(f"Error analyzing frames: {e}")
             logger.debug("Attempting to restart face detection...")
-            return None  # Return None if face detection fails
+            time.sleep(1)  # Wait before retrying
+            # Continue the loop
+            
 
 #------------------------------------------------------------------------------
 # Main Program Execution
 #------------------------------------------------------------------------------
 def main():
+    #Load JSON file, return dictionary of face encodings and their corresponding names
+    encodings_dict = load_json_file()
+    if not encodings_dict:
+        logger.critical("Failed to load authorized faces. Exiting program.")
+        return
+    
     # Initialize camera, 3 attempts maximum
     initialization_attempts = 0
     while initialization_attempts < MAX_ATTEMPTS:
@@ -142,8 +159,8 @@ def main():
         logger.critical("Face detector initialization failed after 3 attempts. Exiting program.")
         return
 
-    # Begin face detection loop
-    detect_face(camera, face_detector)
+    # Begin face detection loop with the loaded encodings_dict
+    detect_face(camera, face_detector, encodings_dict)
 
 if __name__ == "__main__":
     main()
