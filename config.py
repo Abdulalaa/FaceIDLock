@@ -1,31 +1,36 @@
-
 """
 Configuration file for Face ID Lock System
 
 Contains configuration variables and settings used across the application including:
 - Camera settings
-- Logging configuration  
+- Cascade classifier settings
 - System parameters
-
-Authors:
-- Abdullah A.
-- Dev R.
-- Josh M. 
-- Bryan R.
+- Logging settings
+- Door open time
 """
 
-# Camera Recording Config/Specs (REQUIRES TESTING AND TWEAKING!!!) @Josh M.
+#------------------------------------------------------------------------------
+# Imports
+#------------------------------------------------------------------------------
+import logging
+
+
+#------------------------------------------------------------------------------
+# Camera Config/Specs - (Needs testing and tweaking @Josh M.)
+#------------------------------------------------------------------------------
 camera_config = {
     "size": (2304,1296),  # Resolution 
     "fps": 30,  # Frame rate 
-    "format": "RGB888",  # Color format
+    "format": "BGR888",  # Color format for opencv 
     "controls": {
         "AfMode": 2,  # Auto focus mode
         "NoiseReductionMode": 2,  # Noise reduction mode to aid in face detection
     }
 }
 
-# Cascade Classifier Config/Specs (REQUIRES TESTING AND TWEAKING!!!) @Josh M.
+#------------------------------------------------------------------------------
+# Cascade Classifier Settings - (Needs testing and tweaking @Josh M.)
+#------------------------------------------------------------------------------
 cascade_classifier_config = {
     "scaleFactor": 1.2,
     "minNeighbors": 6,
@@ -33,8 +38,32 @@ cascade_classifier_config = {
     "maxSize": (300,300)
 }
 
-# Max Failure Count
+#------------------------------------------------------------------------------
+# System Parameters
+#------------------------------------------------------------------------------
 MAX_ATTEMPTS = 3
-
-# Door Open Time
 DOOR_OPEN_TIME = 5
+
+#------------------------------------------------------------------------------
+# Logging Settings
+# Configure logging for:
+# - Security auditing
+# - System diagnostics/monitoring
+# - Troubleshooting/debugging/exceptions
+# - System status
+#------------------------------------------------------------------------------
+logging.basicConfig(
+    filename="sys.log",    # Log file module
+    encoding="utf-8",
+    filemode="a",          # Append mode
+    format="{asctime} - {levelname} - {message}",
+    style="{",
+    datefmt="%Y-%m-%d %H:%M",
+    level=logging.DEBUG    # Capture all levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+)
+
+
+#------------------------------------------------------------------------------
+# Face Recognition Settings
+#------------------------------------------------------------------------------
+TOLERANCE = 0.5

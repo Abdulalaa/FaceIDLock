@@ -20,13 +20,12 @@ Secure Facial Recognition Access Control System
 """
 
 #------------------------------------------------------------------------------
-# Main Flow Module Imports
+# Main Module Imports
 #------------------------------------------------------------------------------
 import cv2                  # For camera vision
 from picamera2 import Picamera2  # For connection to Pi camera module, needs testing in Pi OS
 import time                 # For timing operations  
 import logging             # For logging messages
-import psutil              # For system monitoring
 
 #------------------------------------------------------------------------------
 # Configuration & Function Imports
@@ -36,25 +35,11 @@ from serial_comm import unlock_door
 from config import *
 
 #------------------------------------------------------------------------------
-# Logging Configuration
+# Logging
 #------------------------------------------------------------------------------
-# Configure logging for:
-# - Security auditing
-# - System diagnostics/monitoring
-# - Troubleshooting/debugging/exceptions
-# - System status
-logging.basicConfig(
-    filename="sys.log",    # Log file module
-    encoding="utf-8",
-    filemode="a",          # Append mode
-    format="{asctime} - {levelname} - {message}",
-    style="{",
-    datefmt="%Y-%m-%d %H:%M",
-    level=logging.DEBUG    # Capture all levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-)
-
-# Initialize logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
 
 #------------------------------------------------------------------------------
 # Global Variables
