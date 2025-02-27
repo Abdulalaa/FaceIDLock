@@ -125,42 +125,56 @@ def detect_face(camera, face_detector, encodings_dict):
 # Main Program Execution
 #------------------------------------------------------------------------------
 def main():
-    #Load JSON file, return dictionary of face encodings and their corresponding names
-    encodings_dict = load_json_file()
-    if not encodings_dict:
-        logger.critical("Failed to load authorized faces. Exiting program.")
-        return
-    
-    # Initialize camera, 3 attempts maximum
-    initialization_attempts = 0
-    while initialization_attempts < MAX_ATTEMPTS:
-        camera = initialize_camera()
-        # Break if camera is initialized successfully
-        if camera is not None:
-            break
-        initialization_attempts += 1
-        time.sleep(0.1)  # Add small delay between initialization attempts
-    # If camera is not initialized after 3 attempts, exit program gracefully
-    if camera is None:
-        logger.critical("Camera initialization failed after 3 attempts. Exiting program.")
-        return
-    
-    # Initialize face detector, 3 attempts maximum
-    face_detector_attempts = 0
-    while face_detector_attempts < MAX_ATTEMPTS:
-        face_detector = initialize_face_detector()
-        # Break if face detector is initialized successfully
-        if face_detector is not None:
-            break
-        face_detector_attempts += 1
-        time.sleep(0.1)  # Add small delay between initialization attempts
-    # If face detector is not initialized after 3 attempts, exit program gracefully
-    if face_detector is None:
-        logger.critical("Face detector initialization failed after 3 attempts. Exiting program.")
-        return
+    camera = None
+    try:
+        #Load JSON file, return dictionary of face encodings and their corresponding names
+        encodings_dict = load_json_file()
+        if not encodings_dict:
+            logger.critical("Failed to load authorized faces. Exiting program.")
+            return
+        
+        # Initialize camera, 3 attempts maximum
+        initialization_attempts = 0
+        while initialization_attempts < MAX_ATTEMPTS:
+            camera = initialize_camera()
+            # Break if camera is initialized successfully
+            if camera is not None:
+                break
+            initialization_attempts += 1
+            time.sleep(0.1)  # Add small delay between initialization attempts
+        # If camera is not initialized after 3 attempts, exit program gracefully
+        if camera is None:
+            logger.critical("Camera initialization failed after 3 attempts. Exiting program.")
+            return
+        
+        # Initialize face detector, 3 attempts maximum
+        face_detector_attempts = 0
+        while face_detector_attempts < MAX_ATTEMPTS:
+            face_detector = initialize_face_detector()
+            # Break if face detector is initialized successfully
+            if face_detector is not None:
+                break
+            face_detector_attempts += 1
+            time.sleep(0.1)  # Add small delay between initialization attempts
+        # If face detector is not initialized after 3 attempts, exit program gracefully
+        if face_detector is None:
+            logger.critical("Face detector initialization failed after 3 attempts. Exiting program.")
+            return
 
-    # Begin face detection loop with the loaded encodings_dict
-    detect_face(camera, face_detector, encodings_dict)
+        # Begin face detection loop with the loaded encodings_dict
+        detect_face(camera, face_detector, encodings_dict)
+    except Exception as e:
+        logger.critical(f"Unexpected error in main program: {e}")
+    finally:
+        # Clean up resources
+        if camera is not None:
+            logger.info("Cleaning up camera resources...")
+            try:
+                camera.stop()
+                camera.close()
+                logger.info("Camera resources released successfully")
+            except Exception as e:
+                logger.error(f"Error releasing camera resources: {e}")
 
 if __name__ == "__main__":
     main()
