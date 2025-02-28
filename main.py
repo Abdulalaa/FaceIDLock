@@ -18,47 +18,57 @@ Modules:
 Secure Facial Recognition Access Control System
 ---------------------------------------------
 """
-
 #------------------------------------------------------------------------------
 # Main Module Imports
 #------------------------------------------------------------------------------
 import cv2                  # For camera vision
 from picamera2 import Picamera2  # For connection to Pi camera module, needs testing in Pi OS
 import time                 # For timing operations  
-import logging             # For logging messages
-import json                # For loading authorized faces
+import logging              # For logging events and errors
+import json                 # For loading authorized faces
 
 #------------------------------------------------------------------------------
 # Configuration & Function Imports
 #------------------------------------------------------------------------------
-from faceID import verify_face
-from serial_comm import unlock_door
-from config import *
+from faceID import verify_face  # Import face verification function
+from serial_comm import unlock_door  # Import door control function
+from config import *  # Import all configuration variables from config.py
 
 #------------------------------------------------------------------------------
 # Logging
 #------------------------------------------------------------------------------
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)  # Get a logger instance for this module
+logger.setLevel(logging.DEBUG)  # Set logging level to DEBUG to capture all messages
 
 
 #------------------------------------------------------------------------------
 # Import JSON file - load and convert to numpy array
 #------------------------------------------------------------------------------
 def load_json_file():
+    """
+    Loads authorized face encodings from JSON file
+    
+    Returns:
+        dict: Dictionary of face encodings and their corresponding names, or False if loading fails
+    """
     try:
         with open("authorized_faces.json", "r") as json_file:
             encodings_dict = json.load(json_file)
-            return encodings_dict #encodings_dict is a dictionary of face encodings and their corresponding names
+            return encodings_dict  # encodings_dict is a dictionary of face encodings and their corresponding names
     except OSError:
         logger.error("Problem loading authorized_faces.json")
-        return False
+        return False  # Return False if file cannot be loaded
 
 #------------------------------------------------------------------------------
 # Camera Initialization
-#------------------------------------------------------------------------------\
-
+#------------------------------------------------------------------------------
 def initialize_camera():
+    """
+    Initializes and configures the Raspberry Pi camera
+    
+    Returns:
+        Picamera2: Configured camera object, or None if initialization fails
+    """
     try:
         logger.debug("Initializing camera hardware and configurations...")
         camera = Picamera2()  # Initialize the camera hardware, resource allocation, and drivers through Picamera2
@@ -66,7 +76,7 @@ def initialize_camera():
         camera.start()  # Start the camera
         time.sleep(2)  # Allow camera to warm up
         logger.info("Camera initialized successfully")
-        return camera
+        return camera  # Return camera object if initialization succeeds
     except Exception as e:
         logger.warning(f"Error initializing camera: {e}")
         logger.debug("Attempting to restart camera initialization...")
@@ -82,11 +92,17 @@ def initialize_camera():
 # Face Detector Initialization
 #------------------------------------------------------------------------------
 def initialize_face_detector():
+    """
+    Initializes the OpenCV face detector using Haar Cascade Classifier
+    
+    Returns:
+        cv2.CascadeClassifier: Configured face detector, or None if initialization fails
+    """
     try:
         logger.debug("Initializing face detector...")
         face_detector = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")  # cv2 + cascade classifier file path
         logger.info("Cascade classifier initialized successfully")
-        return face_detector   
+        return face_detector  # Return face detector if initialization succeeds
     except Exception as e:
         logger.warning(f"Error initializing cascade classifier: {e}")
         logger.debug("Attempting to restart face detector initialization...")
@@ -96,6 +112,14 @@ def initialize_face_detector():
 # Face Detection Loop
 #------------------------------------------------------------------------------
 def detect_face(camera, face_detector, encodings_dict):
+    """
+    Continuously monitors camera feed for faces and verifies them against authorized faces
+    
+    Args:
+        camera: Initialized camera object
+        face_detector: Initialized face detector
+        encodings_dict: Dictionary of authorized face encodings
+    """
     while True:
         try:            
             logger.debug("Initializing face detection...")
@@ -108,8 +132,11 @@ def detect_face(camera, face_detector, encodings_dict):
             logger.debug("Face detected, beginning facial verification...")  # Break in face count logic when face is detected
             if verify_face(frame, face_found[0], encodings_dict):  # Check if the face in the frame is authorized
                 logger.info("Unlocking door...") 
-                unlock_door()  # If the face is authorized, unlock the door
-                logger.info("Door unlocked successfully")
+                if unlock_door():  # If the face is authorized, unlock the door
+                    logger.info("Door unlocked successfully")
+                else:
+                    logger.error("Failed to unlock door, retry face verification")
+
             else:
                 logger.warning("Unauthorized face detected, continuing to monitor...")
                 # Continue monitoring
@@ -125,9 +152,12 @@ def detect_face(camera, face_detector, encodings_dict):
 # Main Program Execution
 #------------------------------------------------------------------------------
 def main():
+    """
+    Main function that orchestrates the entire face recognition system
+    """
     camera = None
     try:
-        #Load JSON file, return dictionary of face encodings and their corresponding names
+        # Load JSON file, return dictionary of face encodings and their corresponding names
         encodings_dict = load_json_file()
         if not encodings_dict:
             logger.critical("Failed to load authorized faces. Exiting program.")

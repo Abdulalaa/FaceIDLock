@@ -68,3 +68,11 @@ logging.basicConfig(
 # Face Recognition Settings
 #------------------------------------------------------------------------------
 TOLERANCE = 0.5
+
+
+#------------------------------------------------------------------------------
+# Serial Communication Settings
+#------------------------------------------------------------------------------
+SERIAL_PORT = "/dev/ttyUSB0"  # Default USB serial port for communication with Arduino/microcontroller
+BAUD_RATE = 9600  # Communication speed for serial connection with Arduino/microcontroller
+
