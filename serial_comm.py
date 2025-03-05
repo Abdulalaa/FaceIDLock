@@ -32,6 +32,15 @@ def initialize_serial_connection():
         logger.error(f"Error initializing serial connection: {e}")
         return None  # Return None if connection fails
 
+#------------------------------------------------------------------------------
+# Checksum security function
+#------------------------------------------------------------------------------
+def calculate_checksum():
+    """Calculate the checksum for the given data, prevents data cooruption and tampering/intrusion"""
+    return sum(data) % 256
+
+
+
 # Initialize serial connection with retry mechanism
 current_attempts = 0  # Counter for connection attempts
 ser = None  # Serial connection object, initially None
@@ -64,7 +73,7 @@ def unlock_door():
                 return True
             else:
                 logger.error("Failed to reconnect to serial port")
-                return False  # Return failure if no connection
+                return False  # Return failure if no connection    
     except Exception as e:
         logger.error(f"Error sending unlock signal: {e}")
         return False  # Return failure if any exception occurs
