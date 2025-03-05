@@ -26,7 +26,7 @@ from picamera2 import Picamera2  # For connection to Pi camera module, needs tes
 import time                 # For timing operations  
 import logging              # For logging events and errors
 import json                 # For loading authorized faces
-
+import numpy as np          # For numerical operations
 #------------------------------------------------------------------------------
 # Configuration & Function Imports
 #------------------------------------------------------------------------------
@@ -123,10 +123,10 @@ def detect_face(camera, face_detector, encodings_dict):
     while True:
         try:            
             logger.debug("Initializing face detection...")
-            face_found = []  # List of faces in frame
+            face_found = np.empty((0, 4))  # Will store detected faces from detectMultiScale with shape (0,4)
             while (len(face_found) != 1):  # Ensure only one face is in frame for safety, ensuring no forced entry
                 frame = camera.capture_array()  # Capture a frame from the camera
-                face_found = face_detector.detectMultiScale(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), cascade_classifier_config)  # Detect faces in the frame
+                face_found = face_detector.detectMultiScale(cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY), **cascade_classifier_config)  # Detect faces in the frame
                 time.sleep(0.1)  # Add small delay to prevent CPU overload during continuous frame capture
 
             logger.debug("Face detected, beginning facial verification...")  # Break in face count logic when face is detected

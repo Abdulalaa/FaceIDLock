@@ -41,6 +41,21 @@ def verify_face(frame, face_location, encodings_dict):
 
         # Extract face from frame using coordinates (y1:y2, x1:x2)
         x, y, w, h = face_location
+        
+        # Get frame dimensions
+        height, width = frame.shape[:2]
+        
+        # Ensure coordinates are within frame boundaries
+        x = max(0, x)
+        y = max(0, y)
+        w = min(w, width - x)
+        h = min(h, height - y)
+        
+        # Check if we have a valid face region
+        if w <= 0 or h <= 0:
+            logger.warning("Face detection coordinates invalid")
+            return False
+            
         face_frame = frame[y:y+h, x:x+w]
 
         # Convert face_frame to RGB
